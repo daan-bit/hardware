@@ -6,6 +6,10 @@ int sensorValue = 0;
 const int redLeds = 5;
 const int greenLeds = 4;
 
+const int buzzer = 7;
+
+//const int magneet = 2;
+
 const int DISPLAY_CLK = 10;
 const int DISPLAY_DIO = 9;
 
@@ -23,6 +27,10 @@ void setup() {
 
    pinMode(greenLeds, OUTPUT);
    pinMode(greenLeds, LOW);
+
+   pinMode(buzzer, OUTPUT);
+
+   //pinMode(magneet, INPUT_PULLUP); werkt hetzelfde als een button
    
    display.begin();
    display.setBacklight(100);
@@ -38,32 +46,35 @@ void loop() {
   delay(100);
   Serial.println(sensorValue);
 
-  //voor nettere code, maak een andere else if met if(sensorValue >5 or <5 && timer == 0). Niet nog een 
-  // keer een if-statement in een if-statement. Nu dubbele code!!
   if(sensorValue < 5){
-    if(timer <= 0){
-      display.clear();
-      display.print("op");
-    }else{
       aftellen();
-    }
   }else if(sensorValue > 5){
     if(timer <= 0){
-      display.clear();
-      display.print("op");
-    }else{
+      afgelopen();
+    } 
     display.clear();
     display.print(timer);
     digitalWrite(redLeds, HIGH);
-    digitalWrite(greenLeds, LOW);  
-    }  
+    digitalWrite(greenLeds, LOW);
+    tone(buzzer, 1000);     
+   } 
   }
-}
 
 void aftellen(){
+  if(timer == 0){
+    afgelopen();
+  }
   display.print(timer);
   digitalWrite(redLeds, LOW);
   digitalWrite(greenLeds, HIGH);
+  noTone(buzzer);
   timer-= 1;
-  delay(1000);
+  delay(1000);  
+}
+
+void afgelopen(){
+  display.clear();
+  while(timer <= 0){  
+  display.print("op");
+  }
 }
