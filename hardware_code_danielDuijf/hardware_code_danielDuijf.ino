@@ -1,14 +1,18 @@
 #include "SevenSegmentTM1637.h"
+#include <Wire.h>
+#include <SPI.h>
+#include <Adafruit_PN532.h>
 
-const int lichtSensor = A0;
-int sensorValue = 0;
+//NFC tag
+#define PN532_IRQ   (2)
+#define PN532_RESET (3)
+
+Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
 
 const int redLeds = 5;
 const int greenLeds = 4;
 
 const int buzzer = 7;
-
-//const int magneet = 2;
 
 const int DISPLAY_CLK = 10;
 const int DISPLAY_DIO = 9;
@@ -17,10 +21,10 @@ int timer = 10;
 
 SevenSegmentTM1637 display(DISPLAY_CLK, DISPLAY_DIO);
 
+
+
 void setup() {
    Serial.begin(9600);
-
-   pinMode(lichtSensor, INPUT);
   
    pinMode(redLeds, OUTPUT);
    pinMode(redLeds, LOW);
@@ -29,36 +33,52 @@ void setup() {
    pinMode(greenLeds, LOW);
 
    pinMode(buzzer, OUTPUT);
-
-   //pinMode(magneet, INPUT_PULLUP); werkt hetzelfde als een button
    
    display.begin();
    display.setBacklight(100);
    display.clear();
    delay(1000);
 
+   nfc.begin();
 
+   uint32_t versiondata = nfc.getFirmwareVersion();
+   if (! versiondata) {
+    Serial.print("Geen board gevonden");
+    while (1);
+  }else{
+    Serial.print("Found chip PN5"); Serial.println((versiondata>>24) & 0xFF, HEX); 
+    Serial.print("Firmware ver. "); Serial.print((versiondata>>16) & 0xFF, DEC); 
+    Serial.print('.'); Serial.println((versiondata>>8) & 0xFF, DEC);
+  }
+
+  nfc.setPassiveActivationRetries(0xFF);
+  
+  nfc.SAMConfig();
+  
+  Serial.println("Waiting for an ISO14443A card");
 
 }
 
 void loop() {
-  sensorValue = analogRead(lichtSensor);
-  delay(100);
-  Serial.println(sensorValue);
-
-  if(sensorValue < 5){
+  boolean success;
+  uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  
+  uint8_t uidLength;        
+  
+  success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, &uid[0], &uidLength);
+  
+  while(success){
+    int sensorValue = analogRead(A0);
+    delay(100);
+    
+    if(sensorValue <5){
+      Serial.println("Telefoon gevonden");
       aftellen();
-  }else if(sensorValue > 5){
-    if(timer <= 0){
-      afgelopen();
-    } 
-    display.clear();
-    display.print(timer);
-    digitalWrite(redLeds, HIGH);
-    digitalWrite(greenLeds, LOW);
-    tone(buzzer, 1000);     
-   } 
-  }
+    }else if (sensorValue > 5){
+      Serial.println("Geen telefoon gevonden");
+      geenTelefoon();
+    }
+  }          
+ }
 
 void aftellen(){
   if(timer == 0){
@@ -72,9 +92,20 @@ void aftellen(){
   delay(1000);  
 }
 
+void geenTelefoon(){
+   if(timer <= 0){
+      afgelopen();
+    }
+    display.clear();
+    display.print(timer);
+    digitalWrite(redLeds, HIGH);
+    digitalWrite(greenLeds, LOW);
+    tone(buzzer, 1000);
+}
+
 void afgelopen(){
   display.clear();
   while(timer <= 0){  
-  display.print("op");
+    display.print("op");
   }
 }
