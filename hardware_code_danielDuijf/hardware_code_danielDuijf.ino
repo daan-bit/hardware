@@ -21,7 +21,8 @@ int timer = 10;
 
 SevenSegmentTM1637 display(DISPLAY_CLK, DISPLAY_DIO);
 
-
+int data = 0;
+char object = ' ';
 
 void setup() {
    Serial.begin(9600);
@@ -55,7 +56,7 @@ void setup() {
   
   nfc.SAMConfig();
   
-  Serial.println("Waiting for an ISO14443A card");
+  display.print("PAS");
 
 }
 
@@ -65,16 +66,21 @@ void loop() {
   uint8_t uidLength;        
   
   success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, &uid[0], &uidLength);
-  
+
+//  while(Serial.available() > 0){
+//    data = Serial.read();
+//  }
+
   while(success){
     int sensorValue = analogRead(A0);
+    Serial.println(sensorValue);
     delay(100);
     
-    if(sensorValue <5){
-      Serial.println("Telefoon gevonden");
+    if(sensorValue < 25){
+      Serial.println("A"); //aanwezig
       aftellen();
-    }else if (sensorValue > 5){
-      Serial.println("Geen telefoon gevonden");
+    }else if (sensorValue > 25){
+      Serial.println("N");  // niet aanwezig
       geenTelefoon();
     }
   }          
@@ -84,6 +90,7 @@ void aftellen(){
   if(timer == 0){
     afgelopen();
   }
+  display.clear();
   display.print(timer);
   digitalWrite(redLeds, LOW);
   digitalWrite(greenLeds, HIGH);
