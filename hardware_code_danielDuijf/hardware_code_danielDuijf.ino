@@ -21,7 +21,7 @@ int timer = 10;
 
 SevenSegmentTM1637 display(DISPLAY_CLK, DISPLAY_DIO);
 
-int data = 0;
+int tekst = 0;
 char object = ' ';
 
 void setup() {
@@ -67,11 +67,29 @@ void loop() {
   
   success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, &uid[0], &uidLength);
 
-//  while(Serial.available() > 0){
-//    data = Serial.read();
-//  }
+  while(Serial.available() > 0){
+    tekst = Serial.read();
+  }
 
-  while(success){
+   switch(tekst){
+    case 's': //L
+      object = 's'; //L
+      break;
+    case '1': //1 (één)
+      if(object == 's'){  //L
+        display.print("STOP");
+        digitalWrite(greenLeds, HIGH);
+        digitalWrite(redLeds, HIGH);
+      }
+      break;
+     case '0': //0
+      if(object == 's'){ //L 
+        display.print("DOOR");
+      }
+      break;
+  }
+
+  if(success){
     int sensorValue = analogRead(A0);
     Serial.println(sensorValue);
     delay(100);
@@ -83,7 +101,9 @@ void loop() {
       Serial.println("N");  // niet aanwezig
       geenTelefoon();
     }
-  }          
+  }else{
+    geenTelefoon();          
+  }
  }
 
 void aftellen(){
