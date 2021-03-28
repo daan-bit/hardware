@@ -17,12 +17,14 @@ const int buzzer = 7;
 const int DISPLAY_CLK = 10;
 const int DISPLAY_DIO = 9;
 
-int timer = 10;
+int timer = 100;
 
 SevenSegmentTM1637 display(DISPLAY_CLK, DISPLAY_DIO);
 
-int tekst = 0;
+int data = 0;
 char object = ' ';
+
+int opSensor = 1;
 
 void setup() {
    Serial.begin(9600);
@@ -68,22 +70,22 @@ void loop() {
   success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, &uid[0], &uidLength);
 
   while(Serial.available() > 0){
-    tekst = Serial.read();
+    data = Serial.read();
   }
 
-   switch(tekst){
-    case 's': //L
-      object = 's'; //L
+   switch(data){
+    case 's': //s
+      object = 's'; //s
       break;
     case '1': //1 (één)
-      if(object == 's'){  //L
+      if(object == 's'){  //s
         display.print("STOP");
         digitalWrite(greenLeds, HIGH);
         digitalWrite(redLeds, HIGH);
       }
       break;
      case '0': //0
-      if(object == 's'){ //L 
+      if(object == 's'){ //s 
         display.print("DOOR");
       }
       break;
@@ -91,22 +93,23 @@ void loop() {
 
   if(success){
     int sensorValue = analogRead(A0);
-    Serial.println(sensorValue);
+    //Serial.println(sensorValue);
     delay(100);
     
-    if(sensorValue < 25){
-      Serial.println("A"); //aanwezig
+    if(sensorValue < 25){      
       aftellen();
-    }else if (sensorValue > 25){
-      Serial.println("N");  // niet aanwezig
+    }else if (sensorValue > 25){      
       geenTelefoon();
     }
-  }else{
-    geenTelefoon();          
   }
  }
 
 void aftellen(){
+  if(opSensor == 1){
+    Serial.println("A"); //aanwezig
+    opSensor -= 1;
+  }
+  
   if(timer == 0){
     afgelopen();
   }
@@ -120,6 +123,10 @@ void aftellen(){
 }
 
 void geenTelefoon(){
+   if(opSensor == 0){
+    Serial.println("N");  // niet aanwezig
+    opSensor += 1;
+   }
    if(timer <= 0){
       afgelopen();
     }
