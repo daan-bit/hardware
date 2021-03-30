@@ -14,7 +14,7 @@ int oldhum;
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   lcd.begin(LCD_COLS, LCD_ROWS);
   lcd.lineWrap();
   for(int i = 0; i < strlen(start); i++){
@@ -24,6 +24,7 @@ void setup()
   }
   delay(2000);
   lcd.clear();
+  delay(200);
 }
 
 void loop()
@@ -46,5 +47,10 @@ void loop()
     oldtemp = DHT11.temperature, 0;
     oldhum = DHT11.humidity;  
   }
+
+  
+  String message = String(newtemp) + " " +  String(newhum);
+  Serial.println(message);
+    
   delay(60000);
 }
