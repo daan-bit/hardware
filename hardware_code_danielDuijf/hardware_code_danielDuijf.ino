@@ -30,10 +30,10 @@ void setup() {
    Serial.begin(9600);
   
    pinMode(redLeds, OUTPUT);
-   pinMode(redLeds, LOW);
+   digitalWrite(redLeds, LOW);
 
    pinMode(greenLeds, OUTPUT);
-   pinMode(greenLeds, LOW);
+   digitalWrite(greenLeds, LOW);
 
    pinMode(buzzer, OUTPUT);
    
@@ -67,28 +67,30 @@ void loop() {
   uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  
   uint8_t uidLength;        
   
-  success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, &uid[0], &uidLength);
+  success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, &uid[0], &uidLength, 1000);
 
   while(Serial.available() > 0){
     data = Serial.read();
-  }
 
-   switch(data){
-    case 's': //s
-      object = 's'; //s
+    switch(data){
+    case 's': 
+      object = 's'; 
       break;
     case '1': //1 (één)
-      if(object == 's'){  //s
-        display.print("STOP");
+      if(object == 's'){ 
+        while(true){
         digitalWrite(greenLeds, HIGH);
         digitalWrite(redLeds, HIGH);
+        display.print("STOP");
+        }
       }
       break;
      case '0': //0
-      if(object == 's'){ //s 
-        display.print("DOOR");
+      if(object == 's'){        
+        break;
       }
       break;
+  }
   }
 
   if(success){
