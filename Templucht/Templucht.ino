@@ -22,6 +22,7 @@ String degree= " ";
 char object = ' ';
 bool otherScreen = true;
 bool skipDelay = false;
+bool zaWarudo = false;
 
 //SETUP
 void setup()
@@ -78,11 +79,16 @@ void loop()
   timeToSend = timeToSend + 1;
 
   //if temp/hum shows on screen next repeat no delay
-  if(skipDelay){
+  if(zaWarudo){
     delay(100);
-    skipDelay = false;
+    zaWarudo = false;
   } else {
     delay(5000);
+  }
+
+  if(skipDelay){
+    zaWarudo = true;
+    skipDelay = false;
   }
 }
 
