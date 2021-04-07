@@ -95,12 +95,12 @@ void loop() {
 
   if(success){
     int sensorValue = analogRead(A0);
-    //Serial.println(sensorValue);
+    Serial.println(sensorValue);
     delay(100);
     
-    if(sensorValue < 25){      
+    if(sensorValue < 35){      
       aftellen();
-    }else if (sensorValue > 25){      
+    }else if (sensorValue > 35){      
       geenTelefoon();
     }
   }
