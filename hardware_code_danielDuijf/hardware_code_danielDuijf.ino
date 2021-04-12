@@ -17,8 +17,6 @@ const int buzzer = 7;
 const int DISPLAY_CLK = 10;
 const int DISPLAY_DIO = 9;
 
-int timer = 100;
-
 SevenSegmentTM1637 display(DISPLAY_CLK, DISPLAY_DIO);
 
 int data = 0;
@@ -69,6 +67,7 @@ void loop() {
   
   success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, &uid[0], &uidLength, 1000);
 
+  //Voert uit wanneer iets over de seriële verbinding komt
   while(Serial.available() > 0){
     data = Serial.read();
 
@@ -77,27 +76,27 @@ void loop() {
       object = 's'; 
       break;
     case '1': //1 (één)
-      if(object == 's'){ 
-        while(true){
-        digitalWrite(greenLeds, HIGH);
-        digitalWrite(redLeds, HIGH);
-        display.print("STOP");
-        }
+      if(object == 's'){         
+         while(true){
+           afgelopen();                    
+         }
       }
       break;
      case '0': //0
-      if(object == 's'){        
+      if(object == 's'){
+        }
         break;
       }
       break;
   }
-  }
 
+  //als de NFC tag gelezen wordt
   if(success){
     int sensorValue = analogRead(A0);
     Serial.println(sensorValue);
     delay(100);
-    
+
+    //gekeken naar de value van de licht sensor
     if(sensorValue < 35){      
       aftellen();
     }else if (sensorValue > 35){      
@@ -108,19 +107,14 @@ void loop() {
 
 void aftellen(){
   if(opSensor == 1){
-    Serial.println("A"); //aanwezig
+    Serial.println("A"); //Telefoon wel aanwezig
     opSensor -= 1;
   }
-  
-  if(timer == 0){
-    afgelopen();
-  }
   display.clear();
-  display.print(timer);
+  display.print("WEL");
   digitalWrite(redLeds, LOW);
   digitalWrite(greenLeds, HIGH);
   noTone(buzzer);
-  timer-= 1;
   delay(1000);  
 }
 
@@ -129,19 +123,16 @@ void geenTelefoon(){
     Serial.println("N");  // niet aanwezig
     opSensor += 1;
    }
-   if(timer <= 0){
-      afgelopen();
-    }
     display.clear();
-    display.print(timer);
+    display.print("NIET");
     digitalWrite(redLeds, HIGH);
     digitalWrite(greenLeds, LOW);
     tone(buzzer, 1000);
 }
 
 void afgelopen(){
-  display.clear();
-  while(timer <= 0){  
-    display.print("op");
-  }
+    digitalWrite(greenLeds, HIGH);
+    digitalWrite(redLeds, HIGH);
+    noTone(buzzer);
+    display.print("STOP");
 }
