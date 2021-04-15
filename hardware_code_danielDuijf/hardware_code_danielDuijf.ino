@@ -24,6 +24,7 @@ char object = ' ';
 
 int opSensor = 1;
 
+//SETUP 
 void setup() {
    Serial.begin(9600);
   
@@ -56,10 +57,11 @@ void setup() {
   
   nfc.SAMConfig();
   
-  display.print("PAS");
+  display.print("TEL");
 
 }
 
+//LOOP
 void loop() {
   boolean success;
   uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  
@@ -71,6 +73,7 @@ void loop() {
   while(Serial.available() > 0){
     data = Serial.read();
 
+    //Als s1 binnenkrijgt, dan wordt de afgelopen functie aangroepen
     switch(data){
     case 's': 
       object = 's'; 
@@ -89,7 +92,6 @@ void loop() {
       }
       break;
   }
-
   //als de NFC tag gelezen wordt
   if(success){
     int sensorValue = analogRead(A0);
@@ -97,39 +99,43 @@ void loop() {
     delay(100);
 
     //gekeken naar de value van de licht sensor
-    if(sensorValue < 35){      
+    if(sensorValue < 40){      
       aftellen();
-    }else if (sensorValue > 35){      
+    }else if (sensorValue > 40){      
       geenTelefoon();
     }
   }
- }
 
+}
+
+//Dit doet ie wanneer de telefoon wel aanwezig is.
 void aftellen(){
   if(opSensor == 1){
     Serial.println("A"); //Telefoon wel aanwezig
     opSensor -= 1;
   }
   display.clear();
-  display.print("WEL");
+  display.print("JA");
   digitalWrite(redLeds, LOW);
   digitalWrite(greenLeds, HIGH);
   noTone(buzzer);
   delay(1000);  
 }
 
+//Dit doet ie wanneer de telefoon niet aanwezig is.
 void geenTelefoon(){
    if(opSensor == 0){
     Serial.println("N");  // niet aanwezig
     opSensor += 1;
    }
     display.clear();
-    display.print("NIET");
+    display.print("NEE");
     digitalWrite(redLeds, HIGH);
     digitalWrite(greenLeds, LOW);
     tone(buzzer, 1000);
 }
 
+//Dit doet ie wanneer de noodgevalbutton wordt ingedrukt of als de timer is afgelopen.
 void afgelopen(){
     digitalWrite(greenLeds, HIGH);
     digitalWrite(redLeds, HIGH);
